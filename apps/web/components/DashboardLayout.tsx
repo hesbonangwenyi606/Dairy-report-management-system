@@ -2,28 +2,49 @@
 
 import Link from 'next/link';
 import { ReactNode, useEffect, useState } from 'react';
-import { getCurrentUser, signOut } from '../lib/auth';
+import { getCurrentUser, signOut, type StoredUser } from '../lib/auth';
 
-const navItems = [
-  { href: '/dashboard', label: 'Dashboard' },
-  { href: '/projects', label: 'Projects' },
-  { href: '/workers', label: 'Workers' },
-  { href: '/attendance', label: 'Attendance' },
-  { href: '/daily-reports', label: 'Daily Reports' },
-  { href: '/materials', label: 'Materials' },
-  { href: '/equipment', label: 'Equipment' },
-  { href: '/safety', label: 'Safety' },
-  { href: '/budgets', label: 'Budgets' },
-  { href: '/procurement', label: 'Procurement' },
-  { href: '/audit-logs', label: 'Audit Logs' },
-];
+const navItemsByRole = {
+  Admin: [
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/admin', label: 'Admin' },
+    { href: '/projects', label: 'Projects' },
+    { href: '/workers', label: 'Workers' },
+    { href: '/attendance', label: 'Attendance' },
+    { href: '/daily-reports', label: 'Daily Reports' },
+    { href: '/materials', label: 'Materials' },
+    { href: '/equipment', label: 'Equipment' },
+    { href: '/safety', label: 'Safety' },
+    { href: '/budgets', label: 'Budgets' },
+    { href: '/procurement', label: 'Procurement' },
+    { href: '/audit-logs', label: 'Audit Logs' },
+  ],
+  Supervisor: [
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/projects', label: 'Projects' },
+    { href: '/workers', label: 'Workers' },
+    { href: '/attendance', label: 'Attendance' },
+    { href: '/daily-reports', label: 'Daily Reports' },
+    { href: '/materials', label: 'Materials' },
+    { href: '/equipment', label: 'Equipment' },
+    { href: '/safety', label: 'Safety' },
+  ],
+  Worker: [
+    { href: '/dashboard', label: 'Dashboard' },
+    { href: '/attendance', label: 'Attendance' },
+    { href: '/daily-reports', label: 'Daily Reports' },
+    { href: '/materials', label: 'Materials' },
+  ],
+};
 
 export function DashboardLayout({ title, children }: { title: string; children: ReactNode }) {
-  const [user, setUser] = useState<{ name: string } | null>(null);
+  const [user, setUser] = useState<StoredUser | null>(null);
 
   useEffect(() => {
     setUser(getCurrentUser());
   }, []);
+
+  const visibleNavItems = navItemsByRole[user?.role as keyof typeof navItemsByRole] ?? navItemsByRole.Admin;
 
   return (
     <div className="min-h-screen bg-slate-950 text-white">
@@ -34,7 +55,7 @@ export function DashboardLayout({ title, children }: { title: string; children: 
               Dairy Report
             </Link>
             <nav className="hidden items-center gap-4 md:flex">
-              {navItems.map((item) => (
+              {visibleNavItems.map((item) => (
                 <Link key={item.href} href={item.href} className="text-sm text-slate-300 transition hover:text-cyan-200">
                   {item.label}
                 </Link>
@@ -46,7 +67,7 @@ export function DashboardLayout({ title, children }: { title: string; children: 
             {user ? (
               <>
                 <span className="hidden rounded-full bg-cyan-500/20 px-3 py-1 text-xs text-cyan-200 sm:inline-block">
-                  {user.name}
+                  {user.name} • {user.role}
                 </span>
                 <button
                   onClick={() => {

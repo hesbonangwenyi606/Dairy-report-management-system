@@ -10,6 +10,7 @@ export default function SignUpPage() {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [role, setRole] = useState<'Admin' | 'Supervisor' | 'Worker'>('Admin');
   const [message, setMessage] = useState('');
 
   const handleSubmit = (event: FormEvent) => {
@@ -28,7 +29,7 @@ export default function SignUpPage() {
       name,
       email,
       password,
-      role: 'Admin',
+      role,
       createdAt: new Date().toISOString(),
     };
 
@@ -36,7 +37,7 @@ export default function SignUpPage() {
     saveCurrentUser(newUser);
     setMessage('Account created successfully. Redirecting...');
 
-    setTimeout(() => router.push('/'), 500);
+    setTimeout(() => router.push('/dashboard'), 500);
   };
 
   return (
@@ -80,6 +81,19 @@ export default function SignUpPage() {
               className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white outline-none ring-0 placeholder:text-slate-400"
               placeholder="Create a password"
             />
+          </div>
+
+          <div>
+            <label className="mb-1 block text-sm text-slate-200">Role</label>
+            <select
+              value={role}
+              onChange={(e) => setRole(e.target.value as 'Admin' | 'Supervisor' | 'Worker')}
+              className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white outline-none"
+            >
+              <option value="Admin">Admin</option>
+              <option value="Supervisor">Supervisor</option>
+              <option value="Worker">Worker</option>
+            </select>
           </div>
 
           {message ? <p className="text-sm text-cyan-300">{message}</p> : null}

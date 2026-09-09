@@ -6,15 +6,15 @@ import { useEffect, useState } from 'react';
 const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
 
 const modules = [
-  'Project & Site Management',
-  'Supervisor Assignment & Email Notifications',
+  'Admin-managed Project & Site Management',
+  'Supervisor Assignment & Site Control',
   'Worker Management & Rate History',
   'Attendance & Working Hours',
   'Labour Calculation & Approval',
   'Daily Reports & PDF Export',
   'Materials, Inventory & Procurement',
   'Equipment, Fuel & Maintenance',
-  'Issues, Safety & site diary',
+  'Issues, Safety & Site Diary',
   'Budgets, Expenses & Forecasting',
   'Analytics, Audit Logs & Notifications',
 ];
@@ -22,7 +22,7 @@ const modules = [
 const phases = [
   {
     name: 'Phase 1',
-    items: ['Authentication', 'Projects', 'Workers', 'Attendance', 'Daily Reports', 'Materials', 'Audit Logs'],
+    items: ['Admin authentication', 'Admin site management', 'Projects', 'Workers', 'Attendance', 'Daily Reports', 'Materials', 'Audit Logs'],
   },
   {
     name: 'Phase 2',
