@@ -1,15 +1,30 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
-
 :root {
   color-scheme: light;
 }
 
-body {
-  @apply bg-slate-100 text-slate-900 antialiased;
-}
-
 * {
   box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  font-family: Arial, Helvetica, sans-serif;
+  background: #f8fafc;
+  color: #0f172a;
+}
+
+main {
+  display: block;
+}
+
+h1, h2, h3, p, ul, li {
+  margin-top: 0;
+}
+
+button, a {
+  transition: all 0.2s ease;
 }
