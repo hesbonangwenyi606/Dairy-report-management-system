@@ -19,6 +19,15 @@ const DEFAULT_ADMIN_USER: StoredUser = {
   createdAt: new Date().toISOString(),
 };
 
+const DEFAULT_SUPERVISOR_USER: StoredUser = {
+  id: 'supervisor-default',
+  name: 'Supervisor User',
+  email: 'supervisor@site.com',
+  password: 'supervisor123',
+  role: 'Supervisor',
+  createdAt: new Date().toISOString(),
+};
+
 export function getUsers(): StoredUser[] {
   if (typeof window === 'undefined') return [];
 
@@ -26,20 +35,32 @@ export function getUsers(): StoredUser[] {
     const raw = window.localStorage.getItem(USERS_KEY);
 
     if (!raw) {
-      window.localStorage.setItem(USERS_KEY, JSON.stringify([DEFAULT_ADMIN_USER]));
-      return [DEFAULT_ADMIN_USER];
+      const seededUsers = [DEFAULT_ADMIN_USER, DEFAULT_SUPERVISOR_USER];
+      window.localStorage.setItem(USERS_KEY, JSON.stringify(seededUsers));
+      return seededUsers;
     }
 
     const users = JSON.parse(raw) as StoredUser[];
     const hasDefaultAdmin = users.some((user) => user.email.toLowerCase() === DEFAULT_ADMIN_USER.email.toLowerCase());
+    const hasDefaultSupervisor = users.some(
+      (user) => user.email.toLowerCase() === DEFAULT_SUPERVISOR_USER.email.toLowerCase(),
+    );
+
+    const mergedUsers = [...users];
 
     if (!hasDefaultAdmin) {
-      const mergedUsers = [DEFAULT_ADMIN_USER, ...users];
-      window.localStorage.setItem(USERS_KEY, JSON.stringify(mergedUsers));
-      return mergedUsers;
+      mergedUsers.unshift(DEFAULT_ADMIN_USER);
     }
 
-    return users;
+    if (!hasDefaultSupervisor) {
+      mergedUsers.unshift(DEFAULT_SUPERVISOR_USER);
+    }
+
+    if (!hasDefaultAdmin || !hasDefaultSupervisor) {
+      window.localStorage.setItem(USERS_KEY, JSON.stringify(mergedUsers));
+    }
+
+    return mergedUsers;
   } catch {
     return [];
   }
