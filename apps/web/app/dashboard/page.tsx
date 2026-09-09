@@ -5,7 +5,9 @@ import { DashboardLayout } from '../../components/DashboardLayout';
 import { getCurrentUser, type StoredUser } from '../../lib/auth';
 
 const apiBase = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001';
-const SUPERVISOR_STORAGE_KEY = 'construction-site-supervisor-data';
+const SUPERVISOR_STORAGE_KEY_PREFIX = 'construction-site-supervisor-data-';
+
+const getSupervisorStorageKey = (userId: string) => `${SUPERVISOR_STORAGE_KEY_PREFIX}${userId}`;
 
 type SupervisorWorker = {
   id: string;
@@ -76,8 +78,9 @@ export default function DashboardPage() {
   const [materials, setMaterials] = useState<any[]>([]);
   const [logs, setLogs] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+  const [selectedProjectCode, setSelectedProjectCode] = useState('');
 
-  const [supervisorData, setSupervisorData] = useState<SupervisorData>(defaultSupervisorData);
+  const [supervisorSiteData, setSupervisorSiteData] = useState<Record<string, SupervisorData>>({});
   const [workerForm, setWorkerForm] = useState({ name: '', role: 'Worker', phone: '' });
   const [resourceForm, setResourceForm] = useState({ name: '', quantity: '', unit: 'bags', usedFor: '' });
   const [achievementForm, setAchievementForm] = useState({ title: '', details: '' });
@@ -136,22 +139,47 @@ export default function DashboardPage() {
     }
 
     try {
-      const saved = window.localStorage.getItem(SUPERVISOR_STORAGE_KEY);
+      const storageKey = getSupervisorStorageKey(user.id);
+      const saved = window.localStorage.getItem(storageKey);
 
       if (saved) {
-        setSupervisorData(JSON.parse(saved));
+        setSupervisorSiteData(JSON.parse(saved));
       } else {
-        window.localStorage.setItem(SUPERVISOR_STORAGE_KEY, JSON.stringify(defaultSupervisorData));
+        window.localStorage.setItem(storageKey, JSON.stringify({}));
+        setSupervisorSiteData({});
       }
     } catch {
-      setSupervisorData(defaultSupervisorData);
+      setSupervisorSiteData({});
     }
   }, [user]);
 
+  useEffect(() => {
+    if (!projects.length) {
+      return;
+    }
+
+    if (!selectedProjectCode || !projects.some((project) => project.code === selectedProjectCode)) {
+      setSelectedProjectCode(projects[0].code);
+    }
+  }, [projects, selectedProjectCode]);
+
+  const currentSupervisorData = selectedProjectCode ? (supervisorSiteData[selectedProjectCode] ?? defaultSupervisorData) : defaultSupervisorData;
+
   const updateSupervisorData = (next: SupervisorData) => {
-    setSupervisorData(next);
+    if (!user || !selectedProjectCode) {
+      return;
+    }
+
+    const storageKey = getSupervisorStorageKey(user.id);
+    const nextMap = {
+      ...supervisorSiteData,
+      [selectedProjectCode]: next,
+    };
+
+    setSupervisorSiteData(nextMap);
+
     if (typeof window !== 'undefined') {
-      window.localStorage.setItem(SUPERVISOR_STORAGE_KEY, JSON.stringify(next));
+      window.localStorage.setItem(storageKey, JSON.stringify(nextMap));
     }
   };
 
@@ -162,7 +190,7 @@ export default function DashboardPage() {
     }
 
     const next = {
-      ...supervisorData,
+      ...currentSupervisorData,
       workers: [
         {
           id: `supervisor-worker-${Date.now()}`,
@@ -170,7 +198,7 @@ export default function DashboardPage() {
           role: workerForm.role,
           phone: workerForm.phone,
         },
-        ...supervisorData.workers,
+        ...currentSupervisorData.workers,
       ],
     };
 
@@ -185,7 +213,7 @@ export default function DashboardPage() {
     }
 
     const next = {
-      ...supervisorData,
+      ...currentSupervisorData,
       resources: [
         {
           id: `supervisor-resource-${Date.now()}`,
@@ -195,7 +223,7 @@ export default function DashboardPage() {
           usedFor: resourceForm.usedFor,
           photo: resourcePhoto,
         },
-        ...supervisorData.resources,
+        ...currentSupervisorData.resources,
       ],
     };
 
@@ -211,7 +239,7 @@ export default function DashboardPage() {
     }
 
     const next = {
-      ...supervisorData,
+      ...currentSupervisorData,
       achievements: [
         {
           id: `supervisor-achievement-${Date.now()}`,
@@ -219,7 +247,7 @@ export default function DashboardPage() {
           details: achievementForm.details,
           photo: achievementPhoto,
         },
-        ...supervisorData.achievements,
+        ...currentSupervisorData.achievements,
       ],
     };
 
@@ -345,10 +373,25 @@ export default function DashboardPage() {
   if (user.role === 'Supervisor') {
     return (
       <DashboardLayout title="Supervisor Dashboard">
+        <div className="mb-6 rounded-2xl border border-white/10 bg-white/5 p-4">
+          <label className="mb-2 block text-sm text-slate-200">Select site</label>
+          <select
+            value={selectedProjectCode}
+            onChange={(e) => setSelectedProjectCode(e.target.value)}
+            className="w-full rounded-xl border border-white/10 bg-slate-900 px-3 py-2 text-white outline-none"
+          >
+            {projects.map((project) => (
+              <option key={project.code} value={project.code}>
+                {project.name} ({project.code})
+              </option>
+            ))}
+          </select>
+        </div>
+
         <div className="mb-8 grid gap-5 md:grid-cols-3">
-          <StatCard label="Workers" value={supervisorData.workers.length.toString()} detail="Team members added" />
-          <StatCard label="Resources" value={supervisorData.resources.length.toString()} detail="Resource entries logged" />
-          <StatCard label="Achievements" value={supervisorData.achievements.length.toString()} detail="Completed milestones" />
+          <StatCard label="Workers" value={currentSupervisorData.workers.length.toString()} detail="Team members added" />
+          <StatCard label="Resources" value={currentSupervisorData.resources.length.toString()} detail="Resource entries logged" />
+          <StatCard label="Achievements" value={currentSupervisorData.achievements.length.toString()} detail="Completed milestones" />
         </div>
 
         <div className="grid gap-6 lg:grid-cols-3">
@@ -455,9 +498,9 @@ export default function DashboardPage() {
 
         <div className="mt-10 grid gap-6 lg:grid-cols-3">
           <Panel title="Workers on this site">
-            {supervisorData.workers.length ? (
+            {currentSupervisorData.workers.length ? (
               <div className="space-y-3">
-                {supervisorData.workers.map((worker) => (
+                {currentSupervisorData.workers.map((worker) => (
                   <div key={worker.id} className="rounded-xl border border-white/10 bg-slate-900/70 p-3">
                     <p className="font-semibold text-white">{worker.name}</p>
                     <p className="text-sm text-slate-300">{worker.role}</p>
@@ -471,9 +514,9 @@ export default function DashboardPage() {
           </Panel>
 
           <Panel title="Resources used today">
-            {supervisorData.resources.length ? (
+            {currentSupervisorData.resources.length ? (
               <div className="space-y-3">
-                {supervisorData.resources.map((resource) => (
+                {currentSupervisorData.resources.map((resource) => (
                   <div key={resource.id} className="rounded-xl border border-white/10 bg-slate-900/70 p-3">
                     <div className="flex items-center justify-between gap-3">
                       <div>
@@ -496,9 +539,9 @@ export default function DashboardPage() {
           </Panel>
 
           <Panel title="Achievements and archive">
-            {supervisorData.achievements.length ? (
+            {currentSupervisorData.achievements.length ? (
               <div className="space-y-3">
-                {supervisorData.achievements.map((achievement) => (
+                {currentSupervisorData.achievements.map((achievement) => (
                   <div key={achievement.id} className="rounded-xl border border-white/10 bg-slate-900/70 p-3">
                     <div className="flex items-center justify-between gap-3">
                       <p className="font-semibold text-white">{achievement.title}</p>
