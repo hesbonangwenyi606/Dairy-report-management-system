@@ -94,12 +94,12 @@ export default function HomePage() {
     <main className="min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-cyan-900 px-6 py-10 text-white">
       <div className="mx-auto max-w-7xl">
         <header className="mb-10 flex flex-col gap-6 rounded-2xl border border-white/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm">
-          <div className="flex items-center justify-between gap-4">
+          <div className="flex flex-col items-center justify-center gap-4 text-center">
             <div>
               <p className="text-sm uppercase tracking-[0.2em] text-cyan-300">Construction Site Management</p>
               <h1 className="mt-2 text-4xl font-bold">Daily Reporting System</h1>
             </div>
-            <div className="flex items-center gap-3">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <Link
                 href="#modules"
                 className="rounded-full border border-cyan-400/40 bg-slate-900/70 px-5 py-2 text-sm font-semibold text-cyan-200 transition hover:border-cyan-300 hover:text-cyan-100"

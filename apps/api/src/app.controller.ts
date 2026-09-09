@@ -70,6 +70,46 @@ export class AppController {
     return this.appService.getAuditLogs();
   }
 
+  @Get('equipment')
+  getEquipment(): any[] {
+    return this.appService.getEquipment();
+  }
+
+  @Post('equipment')
+  createEquipment(@Body() payload: any): any {
+    return this.appService.createEquipment(payload);
+  }
+
+  @Get('safety-records')
+  getSafetyRecords(): any[] {
+    return this.appService.getSafetyRecords();
+  }
+
+  @Post('safety-records')
+  createSafetyRecord(@Body() payload: any): any {
+    return this.appService.createSafetyRecord(payload);
+  }
+
+  @Get('budgets')
+  getBudgets(): any[] {
+    return this.appService.getBudgets();
+  }
+
+  @Post('budgets')
+  createBudget(@Body() payload: any): any {
+    return this.appService.createBudget(payload);
+  }
+
+  @Get('procurement')
+  getProcurement(): any[] {
+    return this.appService.getProcurement();
+  }
+
+  @Post('procurement')
+  createProcurement(@Body() payload: any): any {
+    return this.appService.createProcurement(payload);
+  }
+
   @Get()
   getHello(): string {
     return this.appService.getHello();

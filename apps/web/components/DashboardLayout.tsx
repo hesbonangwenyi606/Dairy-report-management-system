@@ -11,6 +11,10 @@ const navItems = [
   { href: '/attendance', label: 'Attendance' },
   { href: '/daily-reports', label: 'Daily Reports' },
   { href: '/materials', label: 'Materials' },
+  { href: '/equipment', label: 'Equipment' },
+  { href: '/safety', label: 'Safety' },
+  { href: '/budgets', label: 'Budgets' },
+  { href: '/procurement', label: 'Procurement' },
   { href: '/audit-logs', label: 'Audit Logs' },
 ];
 

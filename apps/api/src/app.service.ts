@@ -48,6 +48,44 @@ interface Material extends BaseRecord {
   condition: string;
 }
 
+interface EquipmentRecord extends BaseRecord {
+  name: string;
+  projectCode: string;
+  condition: string;
+  operator: string;
+  lastMaintenance: string;
+}
+
+interface SafetyRecord extends BaseRecord {
+  title: string;
+  projectCode: string;
+  severity: string;
+  status: string;
+  description: string;
+  location?: string;
+  actions?: string;
+  reportedBy?: string;
+}
+
+interface BudgetEntry extends BaseRecord {
+  projectCode: string;
+  category: string;
+  planned: number;
+  spent: number;
+  status: string;
+  amount?: number;
+}
+
+interface ProcurementEntry extends BaseRecord {
+  item: string;
+  projectCode: string;
+  supplier: string;
+  amount: number;
+  status: string;
+  vendor?: string;
+  quantity?: number;
+}
+
 interface AuditLog extends BaseRecord {
   action: string;
   details: string;
@@ -147,6 +185,54 @@ export class AppService {
     },
   ];
 
+  private readonly equipment: EquipmentRecord[] = [
+    {
+      id: 'eq-1001',
+      name: 'Excavator 305',
+      projectCode: 'NRR-01',
+      condition: 'Operational',
+      operator: 'M. Hake',
+      lastMaintenance: '2026-09-05',
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  private readonly safetyRecords: SafetyRecord[] = [
+    {
+      id: 'safety-1001',
+      title: 'Scaffolding Inspection',
+      projectCode: 'NRR-01',
+      severity: 'High',
+      status: 'Open',
+      description: 'Weekly scaffolding inspection required before concrete deck work.',
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  private readonly budgets: BudgetEntry[] = [
+    {
+      id: 'budget-1001',
+      projectCode: 'NRR-01',
+      category: 'Labour',
+      planned: 260000,
+      spent: 188000,
+      status: 'On Track',
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
+  private readonly procurement: ProcurementEntry[] = [
+    {
+      id: 'proc-1001',
+      item: 'Steel Rods',
+      projectCode: 'NRR-01',
+      supplier: 'BuildCore Traders',
+      amount: 42000,
+      status: 'Approved',
+      createdAt: new Date().toISOString(),
+    },
+  ];
+
   private readonly auditLogs: AuditLog[] = [
     {
       id: 'log-1001',
@@ -182,6 +268,10 @@ export class AppService {
       attendance: this.attendance.length,
       reports: this.dailyReports.length,
       materials: this.materials.length,
+      equipment: this.equipment.length,
+      safety: this.safetyRecords.length,
+      budgets: this.budgets.length,
+      procurement: this.procurement.length,
       alerts: this.auditLogs.length,
     };
   }
@@ -296,6 +386,106 @@ export class AppService {
 
   getAuditLogs() {
     return this.auditLogs;
+  }
+
+  getEquipment() {
+    return this.equipment;
+  }
+
+  createEquipment(payload: Partial<EquipmentRecord>) {
+    const equipment = {
+      id: `eq-${Date.now()}`,
+      name: payload.name ?? 'New Equipment',
+      projectCode: payload.projectCode ?? 'NRR-01',
+      condition: payload.condition ?? 'Operational',
+      operator: payload.operator ?? 'Unassigned',
+      lastMaintenance: payload.lastMaintenance ?? new Date().toISOString().slice(0, 10),
+      createdAt: new Date().toISOString(),
+    };
+
+    this.equipment.unshift(equipment);
+    this.addAuditLog('Equipment Added', `Equipment ${equipment.name} added`, equipment.projectCode);
+
+    return equipment;
+  }
+
+  getSafetyRecords() {
+    return this.safetyRecords;
+  }
+
+  createSafetyRecord(payload: Partial<SafetyRecord>) {
+    const location = payload.location ?? '';
+    const actions = payload.actions ?? payload.description ?? '';
+    const reportedBy = payload.reportedBy ?? '';
+
+    const safety = {
+      id: `safety-${Date.now()}`,
+      title: payload.title ?? 'New Safety Record',
+      projectCode: payload.projectCode ?? 'NRR-01',
+      severity: payload.severity ?? 'Medium',
+      status: payload.status ?? 'Open',
+      description: actions,
+      location,
+      actions,
+      reportedBy,
+      createdAt: new Date().toISOString(),
+    };
+
+    this.safetyRecords.unshift(safety);
+    this.addAuditLog('Safety Record Added', `Safety record ${safety.title} added`, safety.projectCode);
+
+    return safety;
+  }
+
+  getBudgets() {
+    return this.budgets;
+  }
+
+  createBudget(payload: Partial<BudgetEntry>) {
+    const planned = payload.planned ?? payload.amount ?? 0;
+
+    const budget = {
+      id: `budget-${Date.now()}`,
+      projectCode: payload.projectCode ?? 'NRR-01',
+      category: payload.category ?? 'General',
+      planned,
+      spent: payload.spent ?? 0,
+      amount: planned,
+      status: payload.status ?? 'On Track',
+      createdAt: new Date().toISOString(),
+    };
+
+    this.budgets.unshift(budget);
+    this.addAuditLog('Budget Added', `Budget entry for ${budget.category} added`, budget.projectCode);
+
+    return budget;
+  }
+
+  getProcurement() {
+    return this.procurement;
+  }
+
+  createProcurement(payload: Partial<ProcurementEntry>) {
+    const supplier = payload.supplier ?? payload.vendor ?? 'Unassigned';
+    const amount = payload.amount ?? payload.quantity ?? 0;
+    const quantity = payload.quantity ?? payload.amount ?? 0;
+
+    const procurement = {
+      id: `proc-${Date.now()}`,
+      item: payload.item ?? 'New Procurement',
+      projectCode: payload.projectCode ?? 'NRR-01',
+      supplier,
+      vendor: supplier,
+      amount,
+      quantity,
+      status: payload.status ?? 'Pending',
+      createdAt: new Date().toISOString(),
+    };
+
+    this.procurement.unshift(procurement);
+    this.addAuditLog('Procurement Added', `Procurement request for ${procurement.item} added`, procurement.projectCode);
+
+    return procurement;
   }
 
   private addAuditLog(action: string, details: string, projectCode?: string) {

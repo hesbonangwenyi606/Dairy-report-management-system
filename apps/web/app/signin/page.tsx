@@ -27,7 +27,7 @@ export default function SignInPage() {
     saveCurrentUser(user);
     setMessage('Signed in successfully. Redirecting...');
 
-    setTimeout(() => router.push('/'), 500);
+    setTimeout(() => router.push('/dashboard'), 500);
   };
 
   return (
